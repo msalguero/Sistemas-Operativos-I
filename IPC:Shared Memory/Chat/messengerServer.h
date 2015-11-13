@@ -78,13 +78,12 @@ void* MessengerServer::getSharedMemory(key_t key,int size,int shmflg){
 void MessengerServer::waitForMessage(){
     while(true){
     	Message *message = mailbox->ReadMailBox();
-
         if(message != 0){
             if(message->mtype == 1){
                 AssignNewClientId(message->sendBy);
                 free(message);
             }else{
-                //RouteMessage(message);
+                RouteMessage(message);
                 printf("Message: \"%s\" Sent by %s Sent to %s \n", message->mtext, message->sendBy, message->sendTo);
             }
         }
@@ -96,7 +95,7 @@ void MessengerServer::AssignNewClientId(char* username){
 }
 
 void MessengerServer::RouteMessage(Message *message){
-    
+     free(message);
 }
 
 int MessengerServer::GetClientId(char* username){

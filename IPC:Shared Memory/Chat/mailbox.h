@@ -36,9 +36,9 @@ private:
 
 Message* MailBox::ReadMailBox(){
 	for(int i = 0; i < MAXMSG; i++){
-		Message* message = (Message*)malloc(sizeof(Message));
-		*message = messages[i];
-		if(message->mtype != -1){
+		if(messages[i].mtype != -1){
+			Message* message = (Message*)malloc(sizeof(Message));
+			*message = messages[i];
 			messages[i].mtype = -1;
 			return message;
 		}
