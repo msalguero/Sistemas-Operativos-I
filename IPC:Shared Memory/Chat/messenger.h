@@ -31,9 +31,12 @@ class Messenger{
     int shmflg;
     key_t key;
     char* username;
+    char* sharedMemory;
     size_t buf_length;
     int clientId;
-    MailBox* mailbox;
+    MailBox* serverMailbox;
+    MailBox* clientMailbox;
+    int idAssignationSpace;
 
 public:
     Messenger(char*);
@@ -51,20 +54,34 @@ private:
 Messenger::Messenger(char* username){
     shmflg = 0644 | IPC_CREAT;
     key = 1234;
-    //int size = ((MAXCLIENTS + 1) * (MAXMSG * sizeof(message_buf)));
-    int size = 10 * sizeof(Message);
-    char *arr = (char*)getSharedMemory(key, size, shmflg);
-    mailbox = new MailBox((Message*)arr);
+    int size = ((MAXCLIENTS + 1) * (MAXMSG * sizeof(Message))) + sizeof(newClientId_buf);
+    //int size = 10 * sizeof(Message);
+    idAssignationSpace = (MAXCLIENTS + 1) * (MAXMSG * sizeof(Message));
+    sharedMemory = (char*)getSharedMemory(key, size, shmflg);
+    serverMailbox = new MailBox((Message*)sharedMemory);
     this->username = username;
+    RequestClientId();
 }
 
 void Messenger::RequestClientId(){
-    
+    Message* messageBuffer = PrepareMessageBuffer(username, username, 0);
+    serverMailbox->WriteMailBox(*messageBuffer);
+
+    while(true){
+        newClientId_buf* assignationMemory = (newClientId_buf*) &sharedMemory[idAssignationSpace];
+        if(assignationMemory->mtype == 1){
+            clientId = assignationMemory->newClientId;
+            int offset = MAXMSG * clientId;
+            clientMailbox = new MailBox((Message*)(sharedMemory + offset));
+            printf("%d\n", clientId);
+            return;
+        }
+    }
 }
 
 void Messenger::SendMessage(char* message, char *sendTo){
     Message* messageBuffer = PrepareMessageBuffer(message, sendTo, 2);
-    mailbox->WriteMailBox(*messageBuffer);
+    serverMailbox->WriteMailBox(*messageBuffer);
 }
 
 Message* Messenger::PrepareMessageBuffer(char* message, char *sendTo, int type){
@@ -81,7 +98,10 @@ void Messenger::SendMessageBuffer(){
 }
 
 void Messenger::ReceiveMessageBuffer(){
-    
+    Message *message = clientMailbox->ReadMailBox();
+        if(message != 0){
+            printf("Message: \"%s\" Sent by %s Sent to %s \n", message->mtext, message->sendBy, message->sendTo);
+        }
 }
 
 void* Messenger::getSharedMemory(key_t key,int size,int shmflg){
