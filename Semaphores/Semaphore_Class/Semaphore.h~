@@ -17,14 +17,14 @@ Semaphore::Semaphore(int s){
 
 void Semaphore::wait(){
 	while (S <= 0);
-	pthread_mutex_lock(&mutex);
+	//pthread_mutex_lock(&mutex);
     S--;
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
 
 }
 
 void Semaphore::signal(){
-    pthread_mutex_lock(&mutex);
+    //pthread_mutex_lock(&mutex);
     S++;
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
 }

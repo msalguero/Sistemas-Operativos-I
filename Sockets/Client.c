@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <string.h>
+#include <regex.h> 
 
 #define SOCK_PATH "echo_socket"
 #define REQ_SIZE 100
@@ -101,6 +102,8 @@ int main(){
 }
 
 void NewUser(void * content){
+	regex_t regex;
+	int reti;
 	struct User newUser;
 	char username[16];
 	printf("Enter username\n");
@@ -111,16 +114,49 @@ void NewUser(void * content){
 	scanf("%s", name);
 	strcpy(newUser.name, name);
 	char email[20];
-	printf("Enter email\n");
-	scanf("%s", email);
+	reti = regcomp(&regex, "[A-Za-z0-9_][A-Za-z0-9_]*@[A-Za-z0-9_][A-Za-z0-9_]*.[A-Za-z][A-Za-z][A-Za-z]", 0);
+	if (reti) {
+	    fprintf(stderr, "Could not compile regex\n");
+	    exit(1);
+	}
+	do{
+		printf("Enter email\n");
+		scanf("%s", email);
+		reti = regexec(&regex, email, 0, NULL, 0);
+		if(reti == REG_NOMATCH){
+			printf("email no valido\n");
+		}
+	}while(reti == REG_NOMATCH);
 	strcpy(newUser.email, email);
 	char id[20];
-	printf("Enter id\n");
-	scanf("%s", id);
+	reti = regcomp(&regex, "[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9]", 0);
+	if (reti) {
+	    fprintf(stderr, "Could not compile regex\n");
+	    exit(1);
+	}
+	do{
+		printf("Enter id\n");
+		scanf("%s", id);
+		reti = regexec(&regex, id, 0, NULL, 0);
+		if(reti == REG_NOMATCH){
+			printf("id no valido\n");
+		}
+	}while(reti == REG_NOMATCH);
 	strcpy(newUser.id, id);
 	char birthdate[20];
-	printf("Enter birthdate\n");
-	scanf("%s", birthdate);
+	reti = regcomp(&regex, "[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]", 0);
+	if (reti) {
+	    fprintf(stderr, "Could not compile regex\n");
+	    exit(1);
+	}
+	do{
+		printf("Enter birthdate\n");
+		scanf("%s", birthdate);
+		reti = regexec(&regex, birthdate, 0, NULL, 0);
+		if(reti == REG_NOMATCH){
+			printf("birthdate no valido\n");
+		}
+	}while(reti == REG_NOMATCH);
 	strcpy(newUser.date, birthdate);
 	char photo[20];
 	printf("Enter photo\n");

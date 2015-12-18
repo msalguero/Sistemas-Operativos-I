@@ -30,6 +30,7 @@ typedef struct
 
 class MessengerServer{
 	int shmid;
+    int assignationId;
     key_t key;
     int shmflg;
     int nextClientId;
@@ -47,7 +48,7 @@ private:
 	void AssignNewClientId(char* username);
     void RouteMessage(Message *message);
     int GetClientId(char* username);
-    void* getSharedMemory(key_t key,int size,int shmflg);
+    void* getSharedMemory(key_t key,int size, int shmid, int shmflg);
     void DeleteSharedMemory();
     void* GetEmptyMailBox();
 };
@@ -60,7 +61,7 @@ MessengerServer::MessengerServer(){
     int size = ((MAXCLIENTS + 1) * (MAXMSG * sizeof(Message))) + sizeof(newClientId_buf);
     printf("%d\n", size);
     //int size = 10 * sizeof(Message);
-    char *sharedMemory = (char*)getSharedMemory(key, size, shmflg);
+    char *sharedMemory = (char*)getSharedMemory(key, size, shmid, shmflg);
     mailbox = new MailBox((Message*)sharedMemory);
     idAssignationSpace = (MAXCLIENTS + 1) * (MAXMSG * sizeof(Message));
     printf("%d\n", idAssignationSpace);
@@ -70,7 +71,7 @@ void MessengerServer::DeleteSharedMemory(){
     shmctl(shmid, IPC_RMID, NULL);
 }
 
-void* MessengerServer::getSharedMemory(key_t key,int size,int shmflg){
+void* MessengerServer::getSharedMemory(key_t key,int size, int shmid, int shmflg){
     char* data;
     if ((shmid = shmget (key, size, shmflg)) == -1) {
         perror("shmget: shmget failed"); 
@@ -104,8 +105,9 @@ void MessengerServer::AssignNewClientId(char* username){
     client_buffer->newClientId = nextClientId;
     char * assignationMemory1 = &sharedMemory[idAssignationSpace];
     newClientId_buf* assignationMemory = (newClientId_buf*) sharedMemory;
-    *assignationMemory1 = 'cc';
+    //*assignationMemory1 = 'cc';
     //memcpy(sharedMemory, client_buffer, sizeof(newClientId_buf));
+    memcpy(sharedMemory, client_buffer, 1);
     client newClient = {nextClientId++, username};
     clients[clientCount++] = newClient;
 }

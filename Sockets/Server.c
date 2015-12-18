@@ -27,10 +27,12 @@ struct User
 struct User users[15];
 
 void writeFile();
+void ReadFile();
 
 int main(void)
 {
   initializeUsers();
+  ReadFile();
     int s, s2, t, len;
     struct sockaddr_un local, remote;
     char str[100];
@@ -154,8 +156,7 @@ void writeFile(){
     exit(1);
   }
 
-  const char *text = (char*)users;
-  fprintf(f, "%s\n", text);
+  fwrite(users, sizeof(struct User), 15, f);
 
   fclose(f);
 }
@@ -164,7 +165,7 @@ void ReadFile(){
   FILE *fp;
   
   fp = fopen("users.txt", "r");
-  fscanf(fp, "%s", (char*)users);
+  fread(users, sizeof(struct User), 15, fp);
   
   fclose(fp);
 }
